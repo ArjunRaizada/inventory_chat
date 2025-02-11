@@ -31,7 +31,7 @@ if selected == options[1]:
 else:
     db_uri = LOCALDB
 
-api_key = "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"
+api_key = "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"
 
 @st.cache_resource(ttl="2h")
 def configure_db(db_uri, mysql_host=None, mysql_user=None, mysql_password=None, mysql_db=None):
@@ -39,7 +39,7 @@ def configure_db(db_uri, mysql_host=None, mysql_user=None, mysql_password=None, 
         db_path = (Path(__file__).parent / "inventory.db").absolute()
         creator = lambda: sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
         engine = create_engine("sqlite://", creator=creator)
-        return SQLDatabase(engine)
+        return SQLDatabase(engine, include_tables=["Inventory"])
     elif db_uri == MYSQL:
         if not (mysql_host and mysql_user and mysql_password and mysql_db):
             st.error("Please provide all MySQL connection details.")
@@ -47,14 +47,14 @@ def configure_db(db_uri, mysql_host=None, mysql_user=None, mysql_password=None, 
         engine = create_engine(
             f"mysql+mysqlconnector://{mysql_user}:{mysql_password}@{mysql_host}/{mysql_db}"
         )
-        return SQLDatabase(engine)
+        return SQLDatabase(engine, include_tables=["Inventory"])
 
 if db_uri == MYSQL:
     db = configure_db(db_uri, mysql_host, mysql_user, mysql_password, mysql_db)
 else:
     db = configure_db(db_uri)
 
-llm = ChatGroq(groq_api_key=api_key, model_name="Llama3-8b-8192", streaming=True)
+llm = ChatGroq(groq_api_key=api_key, model_name="llama3-70b-8192", streaming=True)
 toolkit = SQLDatabaseToolkit(db=db, llm=llm)
 agent = create_sql_agent(
     llm=llm,
@@ -69,7 +69,7 @@ if "messages" not in st.session_state or st.sidebar.button("Clear message histor
 for msg in st.session_state["messages"]:
     st.chat_message(msg["role"]).write(msg["content"])
 
-user_query = st.chat_input("Ask anything from the database")
+user_query = st.chat_input("Ask anything about the Inventory table")
 
 if user_query:
     st.session_state["messages"].append({"role": "user", "content": user_query})
