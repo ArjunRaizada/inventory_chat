@@ -31,7 +31,7 @@ if selected == options[1]:
 else:
     db_uri = LOCALDB
 
-api_key = st.secrets("API_KEY")
+api_key = st.secrets["API_KEY"]
 
 @st.cache_resource(ttl="2h")
 def configure_db(db_uri, mysql_host=None, mysql_user=None, mysql_password=None, mysql_db=None):
